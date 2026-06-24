@@ -72,6 +72,9 @@ def apply_footnotes(docx_path: Path) -> None:
         # ドキュメントを開く
         doc = word.Documents.Open(str(docx_path))
 
+        # 編集履歴の追跡を止める
+        doc.TrackRevisions = False
+
         # 本文のRangeを使って検索
         rng = doc.Content
         find = rng.Find
