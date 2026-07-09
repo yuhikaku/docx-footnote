@@ -3,7 +3,7 @@ from pathlib import Path
 import win32com.client
 
 FINISHED_FILE_SUFFIX = "_脚注付"
-FMISSING_FILE_SUFFIX = "_欠番"
+MISSING_FILE_SUFFIX = "_欠番"
 
 
 def find_missing_numbers(numbers: list[int]) -> list[int]:
@@ -119,7 +119,7 @@ def apply_footnotes(docx_path: Path) -> None:
                 for num in missing_nums
             ]
             out_missing_path = output_path.with_name(
-                f"{output_path.stem}{FMISSING_FILE_SUFFIX}.txt"
+                f"{output_path.stem}{MISSING_FILE_SUFFIX}.txt"
             )
             out_missing_path.write_text(
                 "\n".join([f"■{s[0]}\n{s[1]}\n" for s in skipped]), encoding="utf-8"
