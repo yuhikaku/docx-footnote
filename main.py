@@ -1,3 +1,5 @@
+import csv
+import sys
 from pathlib import Path
 
 import win32com.client
@@ -52,13 +54,13 @@ def load_excel(excel_path: Path) -> dict[str, str]:
         excel.Quit()
 
 
-def apply_footnotes(docx_path: Path) -> None:
+def apply_footnotes(docx_path: Path) -> int:
     excel_path = docx_path.with_suffix(".xlsx")
     if not excel_path.exists():
         print(
             f"{docx_path.name}の脚注定義ファイル {excel_path.name} がありません。スキップします。"
         )
-        return
+        return 0
 
     footnote_mapping = load_excel(excel_path)
 
@@ -67,6 +69,9 @@ def apply_footnotes(docx_path: Path) -> None:
     # Wordアプリケーションを起動
     word = win32com.client.Dispatch("Word.Application")
     word.Visible = False
+
+    # カウンター
+    footnote_counter = 0
 
     try:
         # ドキュメントを開く
@@ -102,20 +107,21 @@ def apply_footnotes(docx_path: Path) -> None:
                 )
             footnote.Range.Text = footnote_text
             footnote_nums.append(int(key))
+            footnote_counter += 1
 
         # 別名で保存
         doc.SaveAs2(str(output_path))
 
         print(f"==> 処理完了: {output_path.name}")
-        print(f"==> 追加した脚注数: {doc.Footnotes.Count}")
+        print(f"==> 追加した脚注数: {footnote_counter}")
 
         missing_nums = find_missing_numbers(footnote_nums)
         if 0 < len(missing_nums):
             print(
-                f"==> 注番号の抜けが{len(missing_nums)}件ありました。ファイルに出力します"
+                f"==> 元のWord原稿に注番号の抜けが{len(missing_nums)}件ありました。ファイルに出力します"
             )
             skipped = [
-                (num, footnote_mapping.get(str(num), "（原稿中になし）"))
+                (num, footnote_mapping.get(str(num), "（Excel中になし）"))
                 for num in missing_nums
             ]
             out_missing_path = output_path.with_name(
@@ -134,18 +140,32 @@ def apply_footnotes(docx_path: Path) -> None:
     finally:
         # Wordを終了
         word.Quit()
+        return footnote_counter
 
 
-if __name__ == "__main__":
-    data_dir = Path(__file__).parent / "data"
-
-    for c in data_dir.iterdir():
+def main(data_dir: Path) -> None:
+    lines = []
+    for c in data_dir.glob("**/*.docx"):
         if c.is_dir():
             continue
         if c.name.startswith("~$"):
             continue
-        if c.suffix == ".docx" and not c.stem.endswith(FINISHED_FILE_SUFFIX):
-            print(f"処理中：{c.name}")
-            apply_footnotes(c)
+        if c.stem.endswith(FINISHED_FILE_SUFFIX):
+            continue
+        print(f"処理中：{c.name}")
+        count = apply_footnotes(c)
+        lines.append([c.name, count])
+
+    out_csv_path = data_dir / "report.csv"
+    with open(out_csv_path, "w", encoding="utf-8", newline="") as f:
+        writer = csv.writer(f)
+        writer.writerow(["ファイル名", "追加した脚注数"])
+        writer.writerows(lines)
 
     input("\n\n処理が完了しました！\n何かキーを押すと終了します")
+
+
+if __name__ == "__main__":
+    args = sys.argv[1:]
+    data_dir = Path("data") if len(args) < 1 else Path(args[0])
+    main(data_dir)
