@@ -22,7 +22,7 @@ def find_missing_numbers(numbers: list[int]) -> list[int]:
     return [n for n in full_range if n not in number_set]
 
 
-def load_excel(excel_path: Path) -> dict[str, str]:
+def load_excel(excel_path: str) -> dict[str, str]:
     """
     Excelファイルから脚注マッピングを読み込む
     1列目: 脚注番号、2列目: 脚注テキスト
@@ -31,7 +31,7 @@ def load_excel(excel_path: Path) -> dict[str, str]:
     excel.Visible = False
 
     try:
-        workbook = excel.Workbooks.Open(str(excel_path), ReadOnly=True)
+        workbook = excel.Workbooks.Open(excel_path, ReadOnly=True)
         sheet = workbook.Worksheets(1)  # 最初のシートを使用
 
         # 使用範囲を取得
@@ -62,7 +62,7 @@ def apply_footnotes(docx_path: Path) -> int:
         )
         return 0
 
-    footnote_mapping = load_excel(excel_path)
+    footnote_mapping = load_excel(str(excel_path.absolute()))
 
     output_path = docx_path.with_name(f"{docx_path.stem}{FINISHED_FILE_SUFFIX}.docx")
 
@@ -75,7 +75,7 @@ def apply_footnotes(docx_path: Path) -> int:
 
     try:
         # ドキュメントを開く
-        doc = word.Documents.Open(str(docx_path))
+        doc = word.Documents.Open(str(docx_path.absolute()))
 
         # 編集履歴の追跡を止める
         doc.TrackRevisions = False
@@ -110,7 +110,7 @@ def apply_footnotes(docx_path: Path) -> int:
             footnote_counter += 1
 
         # 別名で保存
-        doc.SaveAs2(str(output_path))
+        doc.SaveAs2(str(output_path.absolute()))
 
         print(f"==> 処理完了: {output_path.name}")
         print(f"==> 追加した脚注数: {footnote_counter}")
