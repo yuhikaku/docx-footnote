@@ -258,12 +258,12 @@ const run = async () => {
       const missingNumbers = missingHeader.split(",");
       showMissingReport(missingNumbers, pairs);
       setStatus(
-        `Done. ${count} footnote(s) inserted.\nMissing numbers (${missingNumbers.length}): ${missingHeader}`,
+        `${count}件の脚注を追加しました。\n欠番${missingNumbers.length}件（${missingHeader}）`,
         "warn",
       );
       return;
     }
-    setStatus(`Done. ${count} footnote(s) inserted.`);
+    setStatus(`${count}件の脚注を追加しました。`);
   } catch (error) {
     setStatus(`Request failed: ${error.message}`, "error");
   } finally {
