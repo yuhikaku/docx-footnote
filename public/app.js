@@ -1,4 +1,7 @@
 const DOCX_EXTENSION = ".docx";
+const OUTPUT_SUFFIX = "_脚注付";
+const MISSING_SUFFIX = "_欠番";
+const MISSING_FALLBACK_TEXT = "（Excel中になし）";
 
 const dropZone = document.getElementById("drop-zone");
 const fileInput = document.getElementById("file-input");
@@ -6,9 +9,11 @@ const footnotesInput = document.getElementById("footnotes-input");
 const runButton = document.getElementById("run-button");
 const statusEl = document.getElementById("status");
 const downloadLink = document.getElementById("download");
+const missingLink = document.getElementById("download-missing");
 
 let selectedFile = null;
 let downloadUrl = null;
+let missingUrl = null;
 
 /**
  * Show a status message. kind is "", "error" or "warn".
@@ -23,7 +28,12 @@ const clearDownload = () => {
     URL.revokeObjectURL(downloadUrl);
     downloadUrl = null;
   }
+  if (missingUrl) {
+    URL.revokeObjectURL(missingUrl);
+    missingUrl = null;
+  }
   downloadLink.style.display = "none";
+  missingLink.style.display = "none";
 };
 
 const updateRunButton = () => {
@@ -151,11 +161,44 @@ const parseFootnotes = (raw) => {
 };
 
 /**
- * Build the output file name: input.docx -> input_footnotes.docx
+ * Build the output file name: input.docx -> input_脚注付.docx
  */
 const buildOutputName = (inputName) => {
   const base = inputName.slice(0, -DOCX_EXTENSION.length);
-  return `${base}_footnotes${DOCX_EXTENSION}`;
+  return `${base}${OUTPUT_SUFFIX}${DOCX_EXTENSION}`;
+};
+
+/**
+ * Build the missing report name: input.docx -> input_脚注付_欠番.txt
+ */
+const buildMissingName = (inputName) => {
+  const base = inputName.slice(0, -DOCX_EXTENSION.length);
+  return `${base}${OUTPUT_SUFFIX}${MISSING_SUFFIX}.txt`;
+};
+
+/**
+ * Build the missing numbers report text.
+ * Same format as the CLI: "■number\ntext\n" joined by newlines.
+ */
+const buildMissingReport = (missingNumbers, pairs) => {
+  const textByNumber = new Map(pairs);
+  return missingNumbers
+    .map(
+      (num) => `■${num}\n${textByNumber.get(num) ?? MISSING_FALLBACK_TEXT}\n`,
+    )
+    .join("\n");
+};
+
+/**
+ * Show the missing report download link.
+ */
+const showMissingReport = (missingNumbers, pairs) => {
+  const report = buildMissingReport(missingNumbers, pairs);
+  const blob = new Blob([report], { type: "text/plain;charset=utf-8" });
+  missingUrl = URL.createObjectURL(blob);
+  missingLink.href = missingUrl;
+  missingLink.download = buildMissingName(selectedFile.name);
+  missingLink.style.display = "inline";
 };
 
 /**
@@ -210,10 +253,12 @@ const run = async () => {
     downloadLink.style.display = "inline";
 
     const count = response.headers.get("X-Footnote-Count");
-    const missing = response.headers.get("X-Missing-Numbers");
-    if (missing) {
+    const missingHeader = response.headers.get("X-Missing-Numbers");
+    if (missingHeader) {
+      const missingNumbers = missingHeader.split(",");
+      showMissingReport(missingNumbers, pairs);
       setStatus(
-        `Done. ${count} footnote(s) inserted.\nMissing numbers: ${missing}`,
+        `Done. ${count} footnote(s) inserted.\nMissing numbers (${missingNumbers.length}): ${missingHeader}`,
         "warn",
       );
       return;

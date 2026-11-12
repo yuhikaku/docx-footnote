@@ -94,7 +94,8 @@
       #status.warn {
         color: #9a6700;
       }
-      #download {
+      #download,
+      #download-missing {
         display: none;
         margin-top: 0.5rem;
       }
@@ -147,6 +148,7 @@
       <button id="run-button" type="button" disabled>変換</button>
       <div id="status" role="status"></div>
       <a id="download" href="#">変換したWordをダウンロード</a>
+      <a id="download-missing" href="#">欠番レポート（txt）をダウンロード</a>
     </section>
 
     <script src="/app.js"></script>
