@@ -78,28 +78,42 @@ def apply_footnotes(docx_path: Path) -> int:
         find.MatchWildcards = True
 
         footnote_nums: list[int] = []
+        left_markers: list[str] = []
 
         while find.Execute(FindText="【【[0-9]{1,}】】", Forward=True):
             key = str(rng.Text).replace("【", "").replace("】", "")
-            rng.Delete()
-
-            footnote = doc.Footnotes.Add(Range=rng)
             footnote_text = footnote_mapping.get(key, None)
+
             if footnote_text is None:
-                raise KeyError(
-                    f"脚注番号 {key} に対応する脚注がExcel内に記載されていません。"
-                )
+                left_markers.append(key)
+                rng.SetRange(rng.End, doc.Content.End)
+                continue
+
+            rng.Delete()
+            footnote = doc.Footnotes.Add(Range=rng)
             footnote.Range.Text = footnote_text
             footnote_nums.append(int(key))
             footnote_counter += 1
 
+            rng.SetRange(footnote.Reference.End, doc.Content.End)
+
         doc.SaveAs2(str(output_path.absolute()))
+
+        if left_markers:
+            unique_left = sorted(set(left_markers), key=int)
+            print(
+                f"==> Excel に注釈がないマーカーを本文に残しました: {', '.join(unique_left)}"
+            )
 
         print(f"==> 処理完了: {output_path.name}")
         print(f"==> 追加した脚注数: {footnote_counter}")
 
-        max_num = max(int(k) for k in footnote_mapping if k.isdecimal())
-        missing_nums = find_unused_numbers(max_num, set(footnote_nums))
+        footnote_nums_in_excel = [int(k) for k in footnote_mapping if k.isdecimal()]
+        missing_nums: list[int] = []
+        if footnote_nums_in_excel:
+            max_num = max(footnote_nums_in_excel)
+            missing_nums = find_unused_numbers(max_num, set(footnote_nums))
+
         if 0 < len(missing_nums):
             print(
                 f"==> 元のWord原稿に注番号の抜けが{len(missing_nums)}件ありました。ファイルに出力します"
