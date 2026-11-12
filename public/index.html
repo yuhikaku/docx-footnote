@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>脚注変換器</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        font-family:
+          system-ui,
+          -apple-system,
+          "Segoe UI",
+          sans-serif;
+        max-width: 720px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+        color: #222;
+      }
+      h1 {
+        font-size: 1.4rem;
+      }
+      section {
+        margin-bottom: 1.5rem;
+      }
+      label.title {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 0.4rem;
+      }
+      #drop-zone {
+        border: 2px dashed #999;
+        border-radius: 8px;
+        padding: 2rem 1rem;
+        text-align: center;
+        cursor: pointer;
+        color: #555;
+      }
+      #drop-zone.dragover {
+        border-color: #0b6bcb;
+        background: #eef5fc;
+      }
+      #drop-zone.has-file {
+        border-style: solid;
+        color: #222;
+      }
+      textarea {
+        width: 100%;
+        height: 220px;
+        font-family: Consolas, monospace;
+        font-size: 0.9rem;
+        padding: 0.5rem;
+        white-space: pre;
+        overflow: auto;
+      }
+      .hint {
+        font-size: 0.85rem;
+        color: #666;
+        margin-top: 0.3rem;
+      }
+      code {
+        display: inline-block;
+        padding: 0.12em 0.45em;
+        border: 1px solid #d6e3f0;
+        border-radius: 5px;
+        background: #f1f6fb;
+        color: #174a73;
+        font-family: Consolas, "SFMono-Regular", monospace;
+        font-size: 0.92em;
+        white-space: nowrap;
+      }
+      button {
+        font-size: 1rem;
+        padding: 0.6rem 1.6rem;
+        border: none;
+        border-radius: 6px;
+        background: #0b6bcb;
+        color: #fff;
+        cursor: pointer;
+      }
+      button:disabled {
+        background: #aaa;
+        cursor: not-allowed;
+      }
+      #status {
+        margin-top: 1rem;
+        white-space: pre-wrap;
+      }
+      #status.error {
+        color: #c0261c;
+      }
+      #status.warn {
+        color: #9a6700;
+      }
+      #download {
+        display: none;
+        margin-top: 0.5rem;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>脚注変換器</h1>
+
+    <section>
+      <span
+        class="title"
+        style="display: block; font-weight: 600; margin-bottom: 0.4rem"
+        >1. ファイルをアップロード</span
+      >
+
+      <ul>
+        <li
+          >アップロードしたファイルの整形はこのページ内で完結します<ul
+            ><li>処理が終わったファイルは自動で破棄されます。</li
+            ><li
+              >データを外部のサービスや他のサイトに送信することもありません。安心してご利用ください。</li
+            ></ul
+          ></li
+        >
+        <li
+          >脚注を入れる箇所を<code>【【1】】</code>のように指定してください。</li
+        >
+      </ul>
+      <div id="drop-zone" tabindex="0">
+        .docx ファイルをドロップするか、クリックしてアップロード
+      </div>
+      <input id="file-input" type="file" accept=".docx" hidden />
+    </section>
+
+    <section>
+      <label class="title" for="footnotes-input"
+        >2. 脚注内容を入力（Excelから貼り付けられます）</label
+      >
+      <textarea
+        id="footnotes-input"
+        spellcheck="false"
+        placeholder="1&#9;■■参照。&#10;2&#9;▲▲より。"
+      ></textarea>
+      <div class="hint"
+        >ヘッダ行は不要、1列目が注番号、2列目が注内容（改行OK）。</div
+      >
+    </section>
+
+    <section>
+      <button id="run-button" type="button" disabled>変換</button>
+      <div id="status" role="status"></div>
+      <a id="download" href="#">変換したWordをダウンロード</a>
+    </section>
+
+    <script src="/app.js"></script>
+  </body>
+</html>

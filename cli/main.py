@@ -66,39 +66,26 @@ def apply_footnotes(docx_path: Path) -> int:
 
     output_path = docx_path.with_name(f"{docx_path.stem}{FINISHED_FILE_SUFFIX}.docx")
 
-    # Wordアプリケーションを起動
     word = win32com.client.Dispatch("Word.Application")
     word.Visible = False
 
-    # カウンター
     footnote_counter = 0
 
     try:
-        # ドキュメントを開く
         doc = word.Documents.Open(str(docx_path.absolute()))
-
-        # 編集履歴の追跡を止める
         doc.TrackRevisions = False
 
-        # 本文のRangeを使って検索
         rng = doc.Content
         find = rng.Find
         find.ClearFormatting()
-
-        # ワイルドカード検索を有効化
         find.MatchWildcards = True
 
-        # 注番号を控えていく
         footnote_nums: list[int] = []
 
-        # マーカーを検索して脚注を追加
         while find.Execute(FindText="【【[0-9]{1,}】】", Forward=True):
-            # 数字部分
             key = str(rng.Text).replace("【", "").replace("】", "")
-            # マーカーを削除
             rng.Delete()
 
-            # 脚注を追加
             footnote = doc.Footnotes.Add(Range=rng)
             footnote_text = footnote_mapping.get(key, None)
             if footnote_text is None:
@@ -109,7 +96,6 @@ def apply_footnotes(docx_path: Path) -> int:
             footnote_nums.append(int(key))
             footnote_counter += 1
 
-        # 別名で保存
         doc.SaveAs2(str(output_path.absolute()))
 
         print(f"==> 処理完了: {output_path.name}")
@@ -132,15 +118,14 @@ def apply_footnotes(docx_path: Path) -> int:
             )
 
         doc.Close()
+        return footnote_counter
 
     except Exception as e:
         print(f"エラーが発生しました: {e}")
         raise
 
     finally:
-        # Wordを終了
         word.Quit()
-        return footnote_counter
 
 
 def main(data_dir: Path) -> None:
