@@ -34,8 +34,11 @@ async def create_footnotes(
     docx_bytes = await file.read()
     result, used = apply_footnotes(docx_bytes, mapping)
 
-    max_num = max(int(k) for k in mapping if k.isdecimal())
-    missing = find_unused_numbers(max_num, set(used))
+    footnote_nums = [int(k) for k in mapping if k.isdecimal()]
+    missing = []
+    if footnote_nums:
+        max_num = max(footnote_nums)
+        missing = find_unused_numbers(max_num, set(used))
 
     return Response(
         content=result,
