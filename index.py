@@ -6,7 +6,7 @@ from fastapi import Depends, FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.responses import Response
 from fastapi.staticfiles import StaticFiles
 
-from footnotes import apply_footnotes, find_missing_numbers
+from footnotes import apply_footnotes, find_unused_numbers
 from security import require_allowed_ip
 
 DOCX_MEDIA_TYPE = (
@@ -34,7 +34,9 @@ async def create_footnotes(
     docx_bytes = await file.read()
     result, used = apply_footnotes(docx_bytes, mapping)
 
-    missing = find_missing_numbers(used)
+    max_num = max(int(k) for k in mapping if k.isdecimal())
+    missing = find_unused_numbers(max_num, set(used))
+
     return Response(
         content=result,
         media_type=DOCX_MEDIA_TYPE,

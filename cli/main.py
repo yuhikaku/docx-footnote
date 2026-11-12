@@ -8,18 +8,15 @@ FINISHED_FILE_SUFFIX = "_脚注付"
 MISSING_FILE_SUFFIX = "_欠番"
 
 
-def find_missing_numbers(numbers: list[int]) -> list[int]:
+def find_unused_numbers(max_num: int, used: set[int]) -> list[int]:
     """
-    リスト内の欠番を検出する。
-    連続する整数列（min〜max）を期待値として、存在しない値を返す。
+    max_num までの整数のうち、used に含まれないものを返す
+    例: max_num=5, used=[1,3] の場合、[2,4,5] を返す
+    例: max_num=5, used=[1,2,3,4,5] の場合、[] を返す
+    例: max_num=5, used=[] の場合、[1,2,3,4,5] を返す
     """
-    if not numbers:
-        return []
-
-    number_set = set(numbers)
-    full_range = range(min(numbers), max(numbers) + 1)
-
-    return [n for n in full_range if n not in number_set]
+    all_range = range(1, max_num + 1)
+    return [n for n in all_range if n not in used]
 
 
 def load_excel(excel_path: str) -> dict[str, str]:
@@ -101,7 +98,8 @@ def apply_footnotes(docx_path: Path) -> int:
         print(f"==> 処理完了: {output_path.name}")
         print(f"==> 追加した脚注数: {footnote_counter}")
 
-        missing_nums = find_missing_numbers(footnote_nums)
+        max_num = max(int(k) for k in footnote_mapping if k.isdecimal())
+        missing_nums = find_unused_numbers(max_num, set(footnote_nums))
         if 0 < len(missing_nums):
             print(
                 f"==> 元のWord原稿に注番号の抜けが{len(missing_nums)}件ありました。ファイルに出力します"
