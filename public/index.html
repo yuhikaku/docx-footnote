@@ -4,11 +4,11 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="/styles.css" />
-    <title>脚注変換器</title>
+    <title>docx-footnote - 脚注自動設定器</title>
   </head>
   <body>
     <main>
-      <h1>脚注変換器</h1>
+      <h1>docx-footnote - 脚注自動設定器</h1>
 
       <section>
         <span class="title"
@@ -70,6 +70,18 @@
         <span class="title"><span class="step">3</span>変換</span>
         <button id="run-button" type="button" disabled>変換</button>
         <div id="status" role="status"></div>
+
+        <div
+          id="access-banner"
+          class="callout callout-danger"
+          role="alert"
+          hidden
+        >
+          <span class="callout-badge">DENIED</span>
+          <div>
+            <strong id="access-banner-message"></strong>
+          </div>
+        </div>
 
         <div class="downloads">
           <a id="download" class="dl-primary" href="#"

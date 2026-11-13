@@ -2,6 +2,12 @@ const DOCX_EXTENSION = ".docx";
 const OUTPUT_SUFFIX = "_脚注付";
 const MISSING_SUFFIX = "_欠番";
 const MISSING_FALLBACK_TEXT = "（Excel中になし）";
+const ERROR_MESSAGES = {
+  403: "このネットワーク（IPアドレス）からは利用できません。許可されたネットワークからアクセスしてください。",
+  413: "ファイルが大きすぎます。分割してお試しください。",
+  429: "アクセスが集中しています。しばらく待ってからお試しください。",
+};
+const ACCESS_DENIED_STATUS = 403;
 
 const dropZone = document.getElementById("drop-zone");
 const fileInput = document.getElementById("file-input");
@@ -10,10 +16,24 @@ const runButton = document.getElementById("run-button");
 const statusEl = document.getElementById("status");
 const downloadLink = document.getElementById("download");
 const missingLink = document.getElementById("download-missing");
+const accessBanner = document.getElementById("access-banner");
+const accessBannerMessage = document.getElementById("access-banner-message");
 
 let selectedFile = null;
 let downloadUrl = null;
 let missingUrl = null;
+
+/**
+ * Show or hide the access denied banner.
+ */
+const showAccessBanner = (message) => {
+  accessBannerMessage.textContent = message;
+  accessBanner.hidden = false;
+};
+
+const hideAccessBanner = () => {
+  accessBanner.hidden = true;
+};
 
 /**
  * Show a status message. kind is "", "error" or "warn".
@@ -24,6 +44,7 @@ const setStatus = (message, kind = "") => {
 };
 
 const clearDownload = () => {
+  hideAccessBanner();
   if (downloadUrl) {
     URL.revokeObjectURL(downloadUrl);
     downloadUrl = null;
@@ -241,7 +262,12 @@ const run = async () => {
     });
 
     if (!response.ok) {
-      const detail = await readErrorDetail(response);
+      if (response.status === ACCESS_DENIED_STATUS) {
+        showAccessBanner(ERROR_MESSAGES[ACCESS_DENIED_STATUS]);
+        return;
+      }
+      const known = ERROR_MESSAGES[response.status];
+      const detail = known ?? (await readErrorDetail(response));
       setStatus(`Error ${response.status}: ${detail}`, "error");
       return;
     }

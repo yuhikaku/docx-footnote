@@ -14,6 +14,8 @@
   --safe-bg: #e8f5ee;
   --note: #1f5fa8;
   --note-bg: #e8f0fa;
+  --danger: #c0261c;
+  --danger-bg: #fdecea;
 }
 @media (prefers-color-scheme: dark) {
   :root {
@@ -32,6 +34,8 @@
     --safe-bg: #1b2a23;
     --note: #7fb2ea;
     --note-bg: #1c2733;
+    --danger: #f28b82;
+    --danger-bg: #2d1b1a;
   }
 }
 * {
@@ -215,6 +219,13 @@ button:disabled {
   letter-spacing: 0.08em;
   line-height: 1.6;
 }
+.callout-danger {
+  --callout-color: var(--danger);
+  --callout-bg: var(--danger-bg);
+}
+.callout[hidden] {
+  display: none;
+}
 
 /* before / after example */
 .example {
@@ -359,4 +370,9 @@ button:disabled {
 }
 .dl-secondary:hover {
   color: var(--warn, #9a6700);
+}
+
+#access-banner {
+  margin-top: 1rem;
+  margin-bottom: 0;
 }
