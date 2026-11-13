@@ -16,6 +16,8 @@
   --note-bg: #e8f0fa;
   --danger: #c0261c;
   --danger-bg: #fdecea;
+  --tips: #9a6700;
+  --tips-bg: #fff6e0;
 }
 @media (prefers-color-scheme: dark) {
   :root {
@@ -36,6 +38,8 @@
     --note-bg: #1c2733;
     --danger: #f28b82;
     --danger-bg: #2d1b1a;
+    --tips: #e3b341;
+    --tips-bg: #2b2517;
   }
 }
 * {
@@ -375,4 +379,20 @@ button:disabled {
 #access-banner {
   margin-top: 1rem;
   margin-bottom: 0;
+}
+
+/* tips callout */
+.callout-tips {
+  --callout-color: var(--tips);
+  --callout-bg: var(--tips-bg);
+  margin-top: 1rem;
+  margin-bottom: 0;
+}
+.tips-image {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin-top: 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
 }

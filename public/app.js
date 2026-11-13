@@ -18,6 +18,7 @@ const downloadLink = document.getElementById("download");
 const missingLink = document.getElementById("download-missing");
 const accessBanner = document.getElementById("access-banner");
 const accessBannerMessage = document.getElementById("access-banner-message");
+const tipsCallout = document.getElementById("tips-callout");
 
 let selectedFile = null;
 let downloadUrl = null;
@@ -36,6 +37,17 @@ const hideAccessBanner = () => {
 };
 
 /**
+ * Show or hide the tips callout.
+ */
+const showTips = () => {
+  tipsCallout.hidden = false;
+};
+
+const hideTips = () => {
+  tipsCallout.hidden = true;
+};
+
+/**
  * Show a status message. kind is "", "error" or "warn".
  */
 const setStatus = (message, kind = "") => {
@@ -45,6 +57,7 @@ const setStatus = (message, kind = "") => {
 
 const clearDownload = () => {
   hideAccessBanner();
+  hideTips();
   if (downloadUrl) {
     URL.revokeObjectURL(downloadUrl);
     downloadUrl = null;
@@ -277,6 +290,7 @@ const run = async () => {
     downloadLink.href = downloadUrl;
     downloadLink.download = buildOutputName(selectedFile.name);
     downloadLink.style.display = "inline";
+    showTips();
 
     const count = response.headers.get("X-Footnote-Count");
     const missingHeader = response.headers.get("X-Missing-Numbers");
