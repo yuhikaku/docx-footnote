@@ -8,6 +8,7 @@ const ERROR_MESSAGES = {
   429: "アクセスが集中しています。しばらく待ってからお試しください。",
 };
 const ACCESS_DENIED_STATUS = 403;
+const EXCEL_EXTENSIONS = [".xlsx", ".xls"];
 
 const dropZone = document.getElementById("drop-zone");
 const fileInput = document.getElementById("file-input");
@@ -19,6 +20,8 @@ const missingLink = document.getElementById("download-missing");
 const accessBanner = document.getElementById("access-banner");
 const accessBannerMessage = document.getElementById("access-banner-message");
 const tipsCallout = document.getElementById("tips-callout");
+const excelDropZone = document.getElementById("excel-drop-zone");
+const excelInput = document.getElementById("excel-input");
 
 let selectedFile = null;
 let downloadUrl = null;
@@ -69,6 +72,89 @@ const clearDownload = () => {
   downloadLink.style.display = "none";
   missingLink.style.display = "none";
 };
+
+/**
+ * Convert a cell value to TSV text.
+ * Cells containing tab, newline or quote are wrapped in double quotes.
+ */
+const toTsvCell = (value) => {
+  const text = String(value ?? "");
+  if (!/[\t\r\n"]/.test(text)) {
+    return text;
+  }
+  return `"${text.replace(/"/g, '""')}"`;
+};
+
+/**
+ * Convert the first sheet of a workbook to TSV text.
+ */
+const sheetToTsv = (workbook) => {
+  const sheet = workbook.Sheets[workbook.SheetNames[0]];
+  const rows = XLSX.utils.sheet_to_json(sheet, {
+    header: 1,
+    blankrows: false,
+    defval: "",
+  });
+  return rows
+    .map((row) => row.slice(0, 2).map(toTsvCell).join("\t"))
+    .join("\n");
+};
+
+/**
+ * Read the first sheet of an Excel file into the footnotes textarea.
+ */
+const loadExcel = async (file) => {
+  const isExcel = EXCEL_EXTENSIONS.some((ext) =>
+    file.name.toLowerCase().endsWith(ext),
+  );
+  if (!isExcel) {
+    setStatus("Only .xlsx / .xls files are supported.", "error");
+    return;
+  }
+
+  try {
+    const buffer = await file.arrayBuffer();
+    const workbook = XLSX.read(buffer, { type: "array" });
+    footnotesInput.value = sheetToTsv(workbook);
+    excelDropZone.textContent = file.name;
+    excelDropZone.classList.add("has-file");
+    clearDownload();
+    setStatus("");
+    updateRunButton();
+  } catch (error) {
+    setStatus(`Failed to read Excel: ${error.message}`, "error");
+  }
+};
+
+excelDropZone.addEventListener("click", () => excelInput.click());
+excelDropZone.addEventListener("keydown", (event) => {
+  if (event.key === "Enter" || event.key === " ") {
+    event.preventDefault();
+    excelInput.click();
+  }
+});
+excelInput.addEventListener("change", () => {
+  const file = excelInput.files[0];
+  if (file) {
+    loadExcel(file);
+  }
+  excelInput.value = "";
+});
+excelDropZone.addEventListener("dragover", (event) => {
+  event.preventDefault();
+  excelDropZone.classList.add("dragover");
+});
+excelDropZone.addEventListener("dragleave", () => {
+  excelDropZone.classList.remove("dragover");
+});
+excelDropZone.addEventListener("drop", (event) => {
+  event.preventDefault();
+  excelDropZone.classList.remove("dragover");
+  const file = event.dataTransfer.files[0];
+  if (file) {
+    loadExcel(file);
+  }
+});
 
 const updateRunButton = () => {
   runButton.disabled = !(selectedFile && footnotesInput.value.trim());
