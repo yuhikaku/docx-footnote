@@ -11,9 +11,7 @@
       <h1>docx-footnote - 脚注自動設定器</h1>
 
       <section>
-        <span class="title"
-          ><span class="step">1</span>ファイルをアップロード</span
-        >
+        <span class="title"><span class="step">1</span>原稿を指定</span>
 
         <div id="drop-zone" tabindex="0">
           <span>.docx ファイルをドロップするか、クリックして選択</span>
@@ -23,11 +21,17 @@
         <div class="callout callout-safe">
           <span class="callout-badge">PRIVATE</span>
           <div>
-            <strong>整形はこのページ内で完結します</strong>
-            <p>
-              データを外部のサービスや他のサイトに送信することはありません。
-              処理が終わったファイルは自動で破棄されます。
-            </p>
+            <strong
+              >データを外部のサービスや他のサイトに送信することはありません。</strong
+            >
+            <ul>
+              <li
+                >データ処理はこのページ内で完結します（XML 解析に
+                <a href="https://lxml.de/" target="_blank">lxml</a>
+                を使用しています）</li
+              >
+              <li>処理が終わったファイルは自動で破棄されます</li>
+            </ul>
           </div>
         </div>
 
@@ -48,7 +52,7 @@
 
       <section>
         <label class="title" for="footnotes-input">
-          <span class="step">2</span>脚注内容を入力
+          <span class="step">2</span>脚注を指定
         </label>
 
         <div id="excel-drop-zone" tabindex="0">
@@ -59,45 +63,44 @@
         </div>
         <input id="excel-input" type="file" accept=".xlsx,.xls" hidden />
 
-        <textarea
-          id="footnotes-input"
-          spellcheck="false"
-          placeholder="1&#9;■■参照。&#10;2&#9;▲▲より。"
-        ></textarea>
-        <div class="hint">Excel からコピペすることもできます。</div>
+        <div id="footnotes-area" hidden>
+          <textarea
+            id="footnotes-input"
+            spellcheck="false"
+            placeholder="1&#9;■■参照。&#10;2&#9;▲▲より。"
+          ></textarea>
+          <div class="hint">読み込んだ内容を直接編集することもできます。</div>
+        </div>
 
         <div class="callout callout-safe">
           <span class="callout-badge">PRIVATE</span>
           <div>
             <strong
-              ><a href="https://sheetjs.com/" target="_blank">SheetJS</a>
-              (version 0.18.5) を使用してExcelを解析します</strong
+              >データを外部のサービスや他のサイトに送信することはありません。</strong
             >
-            <p>
-              データの処理はこのページ内で完結します。<a
-                href="https://docs.sheetjs.com/docs/demos/net/"
-                target="_blank"
-                >外部通信は一切行われません。</a
+            <ul>
+              <li
+                >データ処理はこのページ内で完結します（Excel の解析に
+                <a href="https://sheetjs.com/" target="_blank">SheetJS</a>
+                を使用しています）</li
               >
-            </p>
+              <li>処理が終わったファイルは自動で破棄されます</li>
+            </ul>
           </div>
         </div>
 
         <div class="callout callout-note">
           <span class="callout-badge">RULE</span>
           <div>
-            <strong>注番号と注内容を対応させてください</strong>
-            <ul>
-              <li>1列目に注番号、2列目に注内容を入れてください</li>
-              <li>ヘッダは不要です</li>
-            </ul>
+            <strong>1列目に注番号、2列目に注内容を入れてください</strong>
+            <p>ヘッダは不要です</p>
           </div>
         </div>
       </section>
 
       <section>
         <span class="title"><span class="step">3</span>変換</span>
-        <button id="run-button" type="button" disabled>変換</button>
+        <button id="run-button" type="button" disabled>GO!</button>
         <div id="status" role="status"></div>
 
         <div

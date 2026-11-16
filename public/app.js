@@ -22,6 +22,7 @@ const accessBannerMessage = document.getElementById("access-banner-message");
 const tipsCallout = document.getElementById("tips-callout");
 const excelDropZone = document.getElementById("excel-drop-zone");
 const excelInput = document.getElementById("excel-input");
+const footnotesArea = document.getElementById("footnotes-area");
 
 let selectedFile = null;
 let downloadUrl = null;
@@ -116,6 +117,7 @@ const loadExcel = async (file) => {
     const buffer = await file.arrayBuffer();
     const workbook = XLSX.read(buffer, { type: "array" });
     footnotesInput.value = sheetToTsv(workbook);
+    footnotesArea.hidden = false;
     excelDropZone.textContent = file.name;
     excelDropZone.classList.add("has-file");
     clearDownload();
